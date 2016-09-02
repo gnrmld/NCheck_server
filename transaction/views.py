@@ -1,13 +1,14 @@
 import ast
 
 from django.conf import settings
+from django.http import Http404
 
 from product.models import Product
-from .models import Transaction
+from .models import Transaction, TransactionDetails
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-# Create your views here.
+
 
 class TransactionView(APIView):
     """Process Transaction Detail"""
@@ -26,10 +27,15 @@ class TransactionView(APIView):
                 product = Product.objects.get(barcode=item.get('barcode'))
                 product.quantity -= item.get('quantity')
                 product.save()
-                transaction.product.add(product)
+                for n in range(product.quantity):
+                    transaction_detail = TransactionDetails()
+                    transaction_detail.product_id = product.id
+                    transaction_detail.transaction_id = transaction.id
+                    transaction_detail.save()
 
         context = {
-            "url": settings.HOST_URL + 'transaction/' + transaction.payment_id
+            "url": settings.HOST_URL + 'transaction/' + transaction.payment_id,
+            "message": 'Thanks for shopping with us!',
         }
         return Response(context)
 
@@ -38,14 +44,23 @@ class TransactionReturnView(APIView):
     """Return transaction view to client"""
 
     def get(self, request, *args, **kwargs):
-        print (self.kwargs.get('payment_id'))
-        if Transaction.objects.filter(payment_id=self.kwargs.get('payment_id')):
-            message = 'SUCCESS!'
-        else:
-            message = 'FAIL'
+        try:
+            transaction = Transaction.objects.get(payment_id=self.kwargs.get('payment_id'))
+            if transaction.is_valid:
+                transaction.is_valid = False
+                transaction.save()
+                message = 'Validated successfully!'
+                status = True
+            else:
+                message = 'Code not valid anymore'
+                status = False
+        except Transaction.DoesNotExist as e:
+            print(e)
+            raise Http404()
 
         context = {
-            "success_message": message,
+            "message": message,
+            "status": status
         }
 
         return Response(context)

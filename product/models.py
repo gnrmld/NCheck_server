@@ -18,6 +18,9 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = 'Categories'
+
 
 class Product(Timestampable):
     barcode = models.CharField(max_length=100, unique=True)
@@ -26,6 +29,9 @@ class Product(Timestampable):
     price = models.IntegerField()
     quantity = models.IntegerField()
     # section = models.CharField(Section, related_name='product', on_delete=models.CASCADE)
+
+    def get_product_rating(self):
+        return
 
     def __str__(self):
         return self.name
