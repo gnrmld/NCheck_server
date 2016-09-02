@@ -5,7 +5,7 @@ from django.db import models
 
 class Shopper(models.Model):
     shopper_id = models.IntegerField()
-    name = models.CharField()
+    name = models.CharField(max_length=100)
     address = models.TextField()
     points = models.IntegerField()
 
