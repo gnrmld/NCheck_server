@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import Http404
 from django.db.models import Sum
 
-from product.models import Product
+from product.models import Product, Category
 from .models import Transaction, TransactionDetails
 
 from rest_framework.views import APIView
@@ -31,6 +31,7 @@ class TransactionView(APIView):
             for item in items:
                 product = Product.objects.get(barcode=item.get('barcode'))
                 product.quantity -= item.get('quantity')
+                product.save()
 
 
                 transaction_detail = TransactionDetails()
@@ -39,12 +40,16 @@ class TransactionView(APIView):
                 transaction_detail.quantity = item.get('quantity')
                 transaction_detail.save()
 
+                category = Category.objects.get(id=product.category.id)
+                category.total_sale += item.get('quantity')
+                category.save()
+
                 # total_quantity = TransactionDetails.objects.filter(product__category=product.category).aggregate(Sum('quantity'))
                 # sold_quantity = TransactionDetails.objects.filter(product=product).aggregate(Sum('quantity'))
                 # rating = (sold_quantity['quantity__sum'] / total_quantity['quantity__sum']) * 100
 
                 # product.rating = rating
-                product.save()
+
 
         context = {
             "url": settings.HOST_URL + 'transaction/' + transaction.payment_id,
