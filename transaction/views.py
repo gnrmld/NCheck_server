@@ -3,6 +3,7 @@ import ast
 from django.conf import settings
 from django.http import Http404
 from django.db.models import Sum
+from django.views import generic
 
 from product.models import Product, Category
 from .models import Transaction, TransactionDetails
@@ -51,7 +52,7 @@ class TransactionView(APIView):
 
 
         context = {
-            "url": settings.HOST_URL + 'transaction/' + transaction.payment_id,
+            "url": settings.HOST_URL + 'transaction/detail/' + transaction.payment_id,
             "message": 'Thanks for shopping with us!',
         }
         return Response(context)
@@ -81,3 +82,18 @@ class TransactionReturnView(APIView):
         }
 
         return Response(context)
+
+
+class TransactionConfirmationView(generic.TemplateView):
+
+    template_name="webview/confirmation.html"
+
+    def get(self, *args, **kwargs):
+        print(kwargs['message'])
+        return super(TransactionConfirmationView, self).get(*args, **kwargs)
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TransactionConfirmationView, self).get_context_data(**kwargs)
+        context['message'] = kwargs['message']
+
+        return context
