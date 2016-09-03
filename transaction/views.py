@@ -25,9 +25,6 @@ class TransactionView(APIView):
         transaction.total_price = float(total_price)
         transaction.payment_id = payment_id
 
-
-
-
         if not Transaction.objects.filter(payment_id=payment_id):
             transaction.save()
             for item in items:
@@ -44,13 +41,6 @@ class TransactionView(APIView):
                 category = Category.objects.get(id=product.category.id)
                 category.total_sale += int(item.get('quantity'))
                 category.save()
-
-                # total_quantity = TransactionDetails.objects.filter(product__category=product.category).aggregate(Sum('quantity'))
-                # sold_quantity = TransactionDetails.objects.filter(product=product).aggregate(Sum('quantity'))
-                # rating = (sold_quantity['quantity__sum'] / total_quantity['quantity__sum']) * 100
-
-                # product.rating = rating
-
 
         context = {
             "url": settings.HOST_URL + 'transaction/detail/' + transaction.payment_id,
