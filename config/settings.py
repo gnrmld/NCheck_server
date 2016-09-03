@@ -136,4 +136,4 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"),]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-HOST_URL = 'http://10.90.0.171:5000/'
+HOST_URL = 'http://10.3.20.50:5000/'
