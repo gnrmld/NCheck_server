@@ -2,6 +2,7 @@ import ast
 
 from django.conf import settings
 from django.http import Http404
+from django.shortcuts import redirect
 from django.db.models import Sum
 from django.views import generic
 
@@ -69,19 +70,15 @@ class TransactionReturnView(APIView):
                 transaction.save()
                 message = 'Validated successfully!'
                 status = True
+                return redirect("transaction:confirmation", message='success')
             else:
                 message = 'Code not valid anymore'
                 status = False
+                return redirect("transaction:confirmation", message='fail')
+
         except Transaction.DoesNotExist as e:
             print(e)
             raise Http404()
-
-        context = {
-            "message": message,
-            "status": status
-        }
-
-        return Response(context)
 
 
 class TransactionConfirmationView(generic.TemplateView):
