@@ -30,6 +30,7 @@ class Product(Timestampable):
     name = models.CharField(max_length=255)
     price = models.FloatField(default=0.0)
     quantity = models.IntegerField()
+    description = models.CharField(max_length=1000)
 
     # section = models.CharField(Section, related_name='product', on_delete=models.CASCADE)
 
@@ -37,12 +38,17 @@ class Product(Timestampable):
         try:
             product_transact_details = TransactionDetails.objects.filter(product__id=self.id).aggregate(Sum('quantity'))
             category_quantity = Category.objects.get(id=self.category.id).total_sale
-            print(category_quantity)
-            print(product_transact_details['quantity__sum'])
-            rating = (product_transact_details['quantity__sum'] /category_quantity) * 100
+            total_quantity = product_transact_details['quantity__sum']
+
+            if not total_quantity:
+                total_quantity = 0
+                rating = 0
+            else:
+                rating = (total_quantity /category_quantity) * 100
             return ("%.2f" % rating)
         except Exception as e:
             print(e)
+            return 0
 
     def __str__(self):
         return self.name

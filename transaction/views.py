@@ -14,13 +14,13 @@ from rest_framework.response import Response
 class TransactionView(APIView):
     """Process Transaction Detail"""
 
-    def post(self, request, format=None):
-        items = ast.literal_eval(request.POST.get("items"))
-        payment_id = request.POST.get('payment_id')
-        total_price = request.POST.get('total_price')
+    def post(self, request, *args, **kwargs):
+        items = request.data.get("items")
+        payment_id = request.data.get('payment_id')
+        total_price = request.data.get('total_price')
         transaction = Transaction()
         transaction.shopper_id = 1
-        transaction.total_price = total_price
+        transaction.total_price = float(total_price)
         transaction.payment_id = payment_id
 
 
@@ -30,18 +30,17 @@ class TransactionView(APIView):
             transaction.save()
             for item in items:
                 product = Product.objects.get(barcode=item.get('barcode'))
-                product.quantity -= item.get('quantity')
+                product.quantity -= int(item.get('quantity'))
                 product.save()
-
 
                 transaction_detail = TransactionDetails()
                 transaction_detail.product_id = product.id
                 transaction_detail.transaction_id = transaction.id
-                transaction_detail.quantity = item.get('quantity')
+                transaction_detail.quantity = int(item.get('quantity'))
                 transaction_detail.save()
 
                 category = Category.objects.get(id=product.category.id)
-                category.total_sale += item.get('quantity')
+                category.total_sale += int(item.get('quantity'))
                 category.save()
 
                 # total_quantity = TransactionDetails.objects.filter(product__category=product.category).aggregate(Sum('quantity'))
